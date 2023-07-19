@@ -1,0 +1,18 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+#gameboard {
+    border: 1px solid #000;
+    width: 90%;
+}
+
+#gameboardContainer {
+    margin-top: 1rem;
+    width: 100vw;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
