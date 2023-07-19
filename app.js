@@ -5,6 +5,10 @@ let gameboardContainer = document.getElementById('gameboardContainer');
 let height = gameboardContainer.offsetHeight;
 let width = gameboardContainer.offsetWidth;
 
+let healthBest = 10000;
+let speedBest = 0.1;
+let decayBest = 2;
+
 class Food {
     constructor(x, y, color) {
         this.color = color;
@@ -28,13 +32,16 @@ class Organism {
         this.x = x;
         this.y = y;
         this.radius = 10;
-        this.speed = 1;
-        this.health = 10000;
+        // this.speedFactor = speedBest - (Math.random() * speedBest * Math.log(healthBest));
+        this.speedFactor = speedBest;
+        this.health = Math.random() * healthBest - (Math.random() * 10 * Math.log(speedBest));
         this.healthDecay = 2;
+        this.speedX = 1;
+        this.speedY = 1;
         this.color = 'red';
 
-        this.dx = this.speed;
-        this.dy = this.speed;
+        this.directionX = this.speedFactor;
+        this.directionY = this.speedFactor;
     }
 
     draw() {
@@ -45,17 +52,23 @@ class Organism {
         ctx.closePath();
     }
 
-    update() {
+    update(deltaX, deltaY, distanceToFood) {
+
+        const directionX = deltaX / distanceToFood;
+        const directionY = deltaY / distanceToFood;
+
+        this.speedX = directionX * this.speedFactor;
+        this.speedY = directionY * this.speedFactor;
         
-        this.x += this.dx;
-        this.y += this.dy;
+        this.x += this.speedX;
+        this.y += this.speedY;
 
         if (this.x < 0 || this.x > width) {
-          this.dx = -this.dx; // Reverse horizontal direction
+          this.directionX = -this.directionX; // Reverse horizontal direction
         }
       
         if (this.y < 0 || this.y > height) {
-          this.dy = -this.dy; // Reverse vertical direction
+          this.directionY = -this.directionY; // Reverse vertical direction
         }
 
         this.health -= this.healthDecay;
@@ -78,8 +91,9 @@ function drawCanvasBorder() {
 }
 
 let allFood = [];
-function drawFood() {
-    allFood.length = 0;
+// initialize the food for the current generation
+function initFood() {
+    allFood = [];
     for (let i = 0; i < Math.floor(Math.random() * 10000); i++) {
         let food = new Food((Math.random() * width), (Math.random() * height), 'green');
         allFood.push(food);
@@ -87,42 +101,60 @@ function drawFood() {
     }
 }
 
+
 let updateBoard = function() {
     ctx.clearRect(0,0,width, height);
     requestAnimationFrame(updateBoard);
 
-    for (let i = 0; i < organisms.length; i++) {
-        organisms[i].update();
+    organisms.forEach((organism, i) => {
+        const nearestFood = getNearestFood(organisms[i]?.x, organisms[i]?.y);
+
+        const deltaX = nearestFood?.x - organisms[i]?.x;
+        const deltaY = nearestFood?.y - organisms[i]?.y;
+
+        const distanceToFood = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+
+        organisms[i].update(deltaX, deltaY, distanceToFood);
+        hasEaten(organisms[i]);
+
         if (organisms[i].health <= 0) {
             organisms.splice(i, 1);
         }
 
-        hasEaten(organisms[i]);
-    }
+    });
 
     render();
 }
 
 function render() {
+    if (organisms.length === 1) {
+        healthBest = organisms[0].health;
+        speedBest = organisms[0].speedFactor;
+    }
+
+    if (allFood.length === 0 || organisms.length === 0) {
+        nextGeneration();
+    }
+        
     allFood.forEach((food) => {
-        food.draw();
+        food?.draw();
     })
 
-    organisms.forEach(organism => {
-        organism.draw();
+    organisms.forEach((organism) => {
+        organism?.draw();
     })
 }
 
 let organisms = [];
-function drawOrganisms() {
-    organisms.length = 0;
+function initOrganisms() {
+    organisms = [];
 
     for (let i = 0; i < 15; i++) {
         let organism = new Organism((Math.random() * width),(Math.random() * height));
         organisms.push(organism);
-        organisms[i].draw();
-        updateBoard();
+        organism.draw();
     }
+    updateBoard();
 }
 
 // check if each organism has eaten food during the frame
@@ -143,7 +175,34 @@ function hasEaten(organism) {
     })
 }
 
+function getNearestFood(organismX, organismY) {
+    let minDist = Infinity;
+    let nearestFood = null;
+    
+    allFood.forEach(food => {
+        const dist = findDist(organismX, organismY, food.x, food.y);
+
+        if (dist < minDist) {
+            minDist = dist;
+            nearestFood = food;
+        }
+    })
+
+    return nearestFood;
+}
+
+function findDist(x1, y1, x2, y2) {
+    return Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+}
 
 drawCanvasBorder();
-drawFood();
-drawOrganisms();
+initFood();
+initOrganisms();
+
+
+function nextGeneration() {
+    console.log('next Generation!')
+    ctx.clearRect(0,0,width, height);
+    initFood();
+    initOrganisms();
+}
