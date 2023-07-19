@@ -11,6 +11,7 @@ class Food {
         this.x = x;
         this.y = y;
         this.radius = 5;
+        this.health = 100;
     }
     
     draw() {
@@ -28,7 +29,8 @@ class Organism {
         this.y = y;
         this.radius = 10;
         this.speed = 1;
-        this.health = 100;
+        this.health = 10000;
+        this.healthDecay = 2;
         this.color = 'red';
 
         this.dx = this.speed;
@@ -49,12 +51,14 @@ class Organism {
         this.y += this.dy;
 
         if (this.x < 0 || this.x > width) {
-            this.dx = -this.dx; // Reverse horizontal direction
-          }
+          this.dx = -this.dx; // Reverse horizontal direction
+        }
       
-          if (this.y < 0 || this.y > height) {
-            this.dy = -this.dy; // Reverse vertical direction
-          }
+        if (this.y < 0 || this.y > height) {
+          this.dy = -this.dy; // Reverse vertical direction
+        }
+
+        this.health -= this.healthDecay;
     }
 }
 
@@ -76,7 +80,7 @@ function drawCanvasBorder() {
 let allFood = [];
 function drawFood() {
     allFood.length = 0;
-    for (let i = 0; i < Math.floor(Math.random() * 500); i++) {
+    for (let i = 0; i < Math.floor(Math.random() * 10000); i++) {
         let food = new Food((Math.random() * width), (Math.random() * height), 'green');
         allFood.push(food);
         allFood[i].draw();
@@ -87,15 +91,20 @@ let updateBoard = function() {
     ctx.clearRect(0,0,width, height);
     requestAnimationFrame(updateBoard);
 
-    organisms.forEach(organism => {
-        organism.update();
-    })
+    for (let i = 0; i < organisms.length; i++) {
+        organisms[i].update();
+        if (organisms[i].health <= 0) {
+            organisms.splice(i, 1);
+        }
+
+        hasEaten(organisms[i]);
+    }
 
     render();
 }
 
 function render() {
-    allFood.forEach(food => {
+    allFood.forEach((food) => {
         food.draw();
     })
 
@@ -114,6 +123,24 @@ function drawOrganisms() {
         organisms[i].draw();
         updateBoard();
     }
+}
+
+// check if each organism has eaten food during the frame
+function hasEaten(organism) {
+    allFood.forEach((food, i) => {
+        const rad = food.radius*2;
+
+        // Check for horizontal collision
+        const xCollision = organism.x < food.x + rad && organism.x + rad > food.x;
+
+        // Check for vertical collision
+        const yCollision = organism.y < food.y + rad && organism.y + rad > food.y;
+
+        if (xCollision && yCollision) {
+            organism.health += food.health;
+            allFood.splice(i, 1);
+        }
+    })
 }
 
 
