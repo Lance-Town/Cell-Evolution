@@ -8,7 +8,7 @@ let width = gameboardContainer.offsetWidth;
 let animationFrameId;
 
 let healthBest = 300;
-let speedBest = 0.15;
+let speedBest = 0.3;
 let decayBest = 2;
 let ORGANISM_SIZE = 15;
 
@@ -224,7 +224,7 @@ function nextGeneration() {
 function resetSimulation() {
     generation = -1;
     healthBest = 300;
-    speedBest = 0.15;
+    speedBest = 0.3;
     decayBest = 2;
     nextGeneration(); 
 }
