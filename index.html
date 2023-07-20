@@ -23,14 +23,17 @@
         </div>
 
         <div id="data">
-            <h1>Generation: <span id="generationNumber">0</span></h1>
+            <div id="organismContainer">
+                <p id="generationTitle">Generation: <span id="generationNumber">0</span></p>
+
+                <div id="organismCounter">
+                    <p>Organism Count:</p>
+                    <input type="number" name="organismCount" id="organismCount" min="2" max="30" step="1" value="10" onclick="updateOrgnaismCount(value)">
+
+                </div>
+            </div>
 
             <form action="button" onclick="resetSimulation()" id="resetBtn">Reset Simulation</form>
-
-            <div id="organismCounter">
-                <h1>Organism Count:</h1>
-                <input type="number" name="organismCount" id="organismCount" min="2" max="30" step="1" value="10" onclick="updateOrgnaismCount(value)">
-            </div>
         </div>
         
         <script src="app.js" async defer></script>

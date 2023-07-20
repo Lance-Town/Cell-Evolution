@@ -4,6 +4,48 @@
     font-family: 'Montserrat';
 }
 
+
+@media screen and (max-width: 200px) {
+    :root {
+        font-size: 8px;
+    }
+}
+
+
+@media screen and (min-width: 200px) {
+    :root {
+        font-size: 12px;
+    }
+}
+
+@media screen and (min-width: 250px) {
+    :root {
+        font-size: 16px;
+    }
+}
+
+/* mobile */
+@media screen and (min-width: 400px){
+    :root {
+        font-size: 20px;
+    }
+}
+
+/* mid-large mobile devices */
+@media screen and (min-width: 600px) {
+    :root {
+        font-size: 24px;
+    }
+}
+
+/* web devices */
+@media screen and (min-width: 719px) {
+    :root {
+        font-size: 28px;
+    }
+}
+
+
 #gameboard {
     border: 1px solid #000;
     width: 90%;
@@ -40,4 +82,16 @@
 #organismCounter {
     display: flex;
     gap: 0.5rem;
+}
+
+#organismContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    font-size: 0.8rem;
+    gap: 3rem;
+    align-items: center;
+}
+
+#generationTitle {
+    width: 100%;
 }
