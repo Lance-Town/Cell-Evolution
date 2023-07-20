@@ -5,9 +5,12 @@ let gameboardContainer = document.getElementById('gameboardContainer');
 let height = gameboardContainer.offsetHeight;
 let width = gameboardContainer.offsetWidth;
 
-let healthBest = 10000;
-let speedBest = 0.1;
+let animationFrameId;
+
+let healthBest = 300;
+let speedBest = 0.15;
 let decayBest = 2;
+let ORGANISM_SIZE = 15;
 
 class Food {
     constructor(x, y, color) {
@@ -15,13 +18,13 @@ class Food {
         this.x = x;
         this.y = y;
         this.radius = 5;
-        this.health = 100;
+        this.health = 30;
     }
     
     draw() {
         ctx.beginPath();
         ctx.fillStyle = this.color;
-        ctx.arc(this.x, this.y, this.radius, 0, 360, false);
+        ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI, false);
         ctx.fill();
         ctx.closePath();
     }
@@ -32,12 +35,12 @@ class Organism {
         this.x = x;
         this.y = y;
         this.radius = 10;
-        // this.speedFactor = speedBest - (Math.random() * speedBest * Math.log(healthBest));
-        this.speedFactor = speedBest;
-        this.health = Math.random() * healthBest - (Math.random() * 10 * Math.log(speedBest));
-        this.healthDecay = 2;
-        this.speedX = 1;
-        this.speedY = 1;
+        this.speedFactor = speedBest + ((((Math.random() * 2 * speedBest) - speedBest)) / 10);
+        this.health = healthBest + (Math.random() * (healthBest * 2 * speedBest / 10) - (Math.random() * (healthBest * speedBest / 10)));
+        this.healthOriginal = this.health;
+        this.healthDecay = decayBest + ((Math.random() * decayBest / 10) - decayBest / 10) + this.speedFactor;
+        this.speedX = 0;
+        this.speedY = 0;
         this.color = 'red';
 
         this.directionX = this.speedFactor;
@@ -47,8 +50,13 @@ class Organism {
     draw() {
         ctx.beginPath();
         ctx.fillStyle = this.color;
-        ctx.arc(this.x, this.y, this.radius, 0, 360, false);
+        ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI, false);
         ctx.fill();
+        ctx.strokeStyle = '#1100ff';
+        ctx.font = 'bold 10pt Calibri';
+        ctx.fillStyle = (this.health < (this.healthOriginal / 2)) ? 'red' : 'green';
+        ctx.fillStyle = ((1 - (this.health / 100)) * 120).toString(10);
+        ctx.fillText(Math.floor(this.health), this.x- (0.5*this.radius), this.y+(2.1*this.radius));
         ctx.closePath();
     }
 
@@ -94,7 +102,7 @@ let allFood = [];
 // initialize the food for the current generation
 function initFood() {
     allFood = [];
-    for (let i = 0; i < Math.floor(Math.random() * 10000); i++) {
+    for (let i = 0; i < (200 + (Math.random() * 1000)); i++) {
         let food = new Food((Math.random() * width), (Math.random() * height), 'green');
         allFood.push(food);
         allFood[i].draw();
@@ -104,7 +112,8 @@ function initFood() {
 
 let updateBoard = function() {
     ctx.clearRect(0,0,width, height);
-    requestAnimationFrame(updateBoard);
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = requestAnimationFrame(updateBoard);
 
     organisms.forEach((organism, i) => {
         const nearestFood = getNearestFood(organisms[i]?.x, organisms[i]?.y);
@@ -128,8 +137,9 @@ let updateBoard = function() {
 
 function render() {
     if (organisms.length === 1) {
-        healthBest = organisms[0].health;
+        healthBest =  (organisms[0].healthOriginal > 100) ? organisms[0].healthOriginal : 100;
         speedBest = organisms[0].speedFactor;
+        decayBest = organisms[0].healthDecay;
     }
 
     if (allFood.length === 0 || organisms.length === 0) {
@@ -149,7 +159,7 @@ let organisms = [];
 function initOrganisms() {
     organisms = [];
 
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < ORGANISM_SIZE; i++) {
         let organism = new Organism((Math.random() * width),(Math.random() * height));
         organisms.push(organism);
         organism.draw();
@@ -199,10 +209,26 @@ drawCanvasBorder();
 initFood();
 initOrganisms();
 
-
+let generation = 0;
 function nextGeneration() {
-    console.log('next Generation!')
+    generation++;
+
+    document.getElementById('generationNumber').innerHTML = generation;
+
     ctx.clearRect(0,0,width, height);
+    drawCanvasBorder();
     initFood();
     initOrganisms();
+}
+
+function resetSimulation() {
+    generation = -1;
+    healthBest = 300;
+    speedBest = 0.15;
+    decayBest = 2;
+    nextGeneration(); 
+}
+
+function updateOrgnaismCount(count) {
+    ORGANISM_SIZE = count;
 }
