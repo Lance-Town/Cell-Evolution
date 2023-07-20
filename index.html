@@ -10,6 +10,7 @@
         <title>Cell Evolution</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
@@ -19,7 +20,17 @@
 
         <div id="gameboardContainer">
             <canvas id="gameboard"></canvas>
+        </div>
 
+        <div id="data">
+            <h1>Generation: <span id="generationNumber">0</span></h1>
+
+            <form action="button" onclick="resetSimulation()" id="resetBtn">Reset Simulation</form>
+
+            <div id="organismCounter">
+                <h1>Organism Count:</h1>
+                <input type="number" name="organismCount" id="organismCount" min="1" max="30" step="1" value="10" onclick="updateOrgnaismCount(value)">
+            </div>
         </div>
         
         <script src="app.js" async defer></script>
